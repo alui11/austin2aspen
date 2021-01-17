@@ -22,9 +22,6 @@ def download_page(link):
 def extract_course_links(html):
     """Parse html and return dictionary of {period_no: course link}."""
 
-def extract_assignmentIDs(html):
-    """Parse html and return dictionary of {assignment_name: ID}."""
-
 def extract_assignment_links(html):
     """Calls extract_assignmentIDs and converts IDs to assignment result links. Returns dict of {assignment_name: link}."""
 
