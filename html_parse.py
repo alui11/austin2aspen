@@ -2,8 +2,7 @@
 import bs4
 from bs4 import BeautifulSoup
 
-# sample_HTML = """
-# """
+sample_HTML = """ """
 
 def course_info_from_row(course_info_row):
   """ Given Tag object for a table row detailing information about a course, 
@@ -34,13 +33,56 @@ def extract_course_links(html):
     periods2links[period_num] = course_page_link
   return periods2links
 
-def extract_assignmentIDs(html):
-  """Parse html and return dictionary of {assignment_name: ID}."""
-  pass
+def traverse_html_tree(tag, extractions):
+  """ Given a list of the form [(el_type1, n1), (el_type2, n2), ...], 
+      extracts the n1-th top-level occurence of el_type1 in tag, 
+      yielding result tag'. Then it will extract the n2-th occurence of 
+      el_type2 in tag', yielding tag'', and so on until the list extractions
+      is empty. """
+  for el_type, n in extractions:
+    els = [x for x in tag.contents 
+           if type(x) == bs4.element.Tag and x.name == el_type]
+    tag = els[n]
+  return tag
+
+def get_all_assignment_rows(class_page_soup):
+  """ Given HTML soup for the class page containing tables of assignments, 
+      returns a list containing each row of those tables as a Tag. """
+  all_assignments_ul = [x for x in 
+                        class_page_soup.find(
+                          "div", {"id": "elementheaders-div"}) 
+                        if type(x) == bs4.element.Tag and x.name == 'ul'
+                        ][0]
+  lists_of_assignments_by_year = [x for x in all_assignments_ul 
+                                  if type(x) == bs4.element.Tag 
+                                  and x.name == 'li']
+  extractions = [('div', -1), ('div', -1), ('div', 1), ('div', 0), 
+                 ('table', 0), ('tbody', 0)]
+  lists_of_assignments_by_year = list(map((lambda x: 
+                                           traverse_html_tree(x, extractions)), 
+                                           lists_of_assignments_by_year))
+  lists_of_assignments_by_year = list(map(lambda x: x.contents,
+                                          lists_of_assignments_by_year))
+  return [row for year_list in lists_of_assignments_by_year 
+          for row in year_list 
+          if type(row) == bs4.element.Tag and row.name == 'tr']
 
 def extract_assignment_links(html):
-  """Calls extract_assignmentIDs and converts IDs to assignment result links. Returns dict of {assignment_name: link}."""
-  pass
+  """ Parse html and return dictionary of {assignment_name: link_to_results}, for assignments that have been published. """
+  assignment2results = dict()
+  class_page_soup = BeautifulSoup(html, 'html.parser')
+  all_assignments = get_all_assignment_rows(class_page_soup)
+  for row in all_assignments:
+    cells = [x for x in row.contents if type(x) == bs4.element.Tag 
+             and x.name == 'td']
+    if cells[9].text != '\ncheck\n':
+      continue
+    url = cells[3].contents[1].get('href')
+    results_page = "https://quest.cns.utexas.edu/instructor/elements/results/show" + url[url.find('?'):]
+    assignment_name = cells[3].contents[1].text
+    assignment2results[assignment_name] = results_page
+  print(assignment2results)
+  return assignment2results
 
 def extract_student_links(html):
   """Parse html and return dictionary of {student_name: link}."""
@@ -51,4 +93,4 @@ def compute_student_score(html):
   pass
 
 # if __name__ == "__main__":
-#   extract_course_links(sample_HTML)
+#   extract_assignment_links(sample_HTML)
