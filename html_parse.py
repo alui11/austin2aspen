@@ -2,7 +2,8 @@
 import bs4
 from bs4 import BeautifulSoup
 
-sample_HTML = """ """
+# sample_HTML = """ 
+# """
 
 def course_info_from_row(course_info_row):
   """ Given Tag object for a table row detailing information about a course, 
@@ -39,6 +40,8 @@ def traverse_html_tree(tag, extractions):
       yielding result tag'. Then it will extract the n2-th occurence of 
       el_type2 in tag', yielding tag'', and so on until the list extractions
       is empty. """
+  if type(tag) != bs4.element.Tag:
+    return tag
   for el_type, n in extractions:
     els = [x for x in tag.contents 
            if type(x) == bs4.element.Tag and x.name == el_type]
@@ -68,7 +71,8 @@ def get_all_assignment_rows(class_page_soup):
           if type(row) == bs4.element.Tag and row.name == 'tr']
 
 def extract_assignment_links(html):
-  """ Parse html and return dictionary of {assignment_name: link_to_results}, for assignments that have been published. """
+  """ Parse html and return dictionary of {assignment_name: link_to_results}, 
+      for assignments that have been published. """
   assignment2results = dict()
   class_page_soup = BeautifulSoup(html, 'html.parser')
   all_assignments = get_all_assignment_rows(class_page_soup)
@@ -86,11 +90,24 @@ def extract_assignment_links(html):
 
 def extract_student_links(html):
   """Parse html and return dictionary of {student_name: link}."""
-  pass
+  student2link = dict()
+  student_soup = BeautifulSoup(html, 'html.parser')
+  table_of_students = student_soup.find("table", {"id" : "manual-table"})
+  table_of_students = traverse_html_tree(table_of_students, [('tbody', 0)])
+  student_link_elements = list(filter(lambda x: type(x) == bs4.element.Tag, 
+                                      map(lambda x: 
+                                            traverse_html_tree(x, 
+                                            [('td', 0), ('a', 0)]), 
+                                          table_of_students)))
+  for student_link in student_link_elements:
+    url = "https://quest.cns.utexas.edu" + student_link.get('href')
+    name = student_link.text
+    student2link[name] = url
+  return student2link
 
 def compute_student_score(html):
-  """Given student restuls page, return the total number of assignment problems that have a nonzero score."""
+  """Given student results page, return the total number of assignment problems that have a nonzero score."""
   pass
 
 # if __name__ == "__main__":
-#   extract_assignment_links(sample_HTML)
+#   extract_student_links(sample_HTML)
