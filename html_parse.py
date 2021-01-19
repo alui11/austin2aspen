@@ -2,9 +2,6 @@
 import bs4
 from bs4 import BeautifulSoup
 
-# sample_HTML = """ 
-# """
-
 def course_info_from_row(course_info_row):
   """ Given Tag object for a table row detailing information about a course, 
       returns (period_num, link_to_course_page) for that course, where
@@ -107,7 +104,20 @@ def extract_student_links(html):
 
 def compute_student_score(html):
   """Given student results page, return the total number of assignment problems that have a nonzero score."""
-  pass
-
-# if __name__ == "__main__":
-#   extract_student_links(sample_HTML)
+  results_soup = BeautifulSoup(html, 'html.parser')
+  table_of_results = traverse_html_tree(
+                      results_soup.find("div", {"id" : "instance-table-div"}), 
+                      [('div', 1), ('div', 1), ('div', 0), ('table', 0), 
+                        ('tbody', 0)])
+  questions_passed = list(filter(
+                            lambda x: len(x.text.strip()) != 0 
+                                      and x.text.strip() != "0", 
+                          map(
+                            lambda x: 
+                              traverse_html_tree(x, [('td', 3), ('div', 0)]), 
+                          filter(
+                            lambda x: type(x) == bs4.element.Tag 
+                                      and x.name == 'tr' 
+                                      and len(x.contents) == 11, 
+                          table_of_results.contents))))
+  return len(questions_passed)
