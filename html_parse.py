@@ -32,7 +32,8 @@ def extract_course_links(html):
   return periods2links
 
 def traverse_html_tree(tag, extractions):
-  """ Given a list of the form [(el_type1, n1), (el_type2, n2), ...], 
+  """ Helper for HTML parsing functions:
+      Given a list of the form [(el_type1, n1), (el_type2, n2), ...], 
       extracts the n1-th top-level occurence of el_type1 in tag, 
       yielding result tag'. Then it will extract the n2-th occurence of 
       el_type2 in tag', yielding tag'', and so on until the list extractions
