@@ -83,7 +83,6 @@ def extract_assignment_links(html):
     results_page = "https://quest.cns.utexas.edu/instructor/elements/results/show" + url[url.find('?'):]
     assignment_name = cells[3].contents[1].text
     assignment2results[assignment_name] = results_page
-  print(assignment2results)
   return assignment2results
 
 def extract_student_links(html):
@@ -119,6 +118,7 @@ def compute_student_score(html):
                           filter(
                             lambda x: type(x) == bs4.element.Tag 
                                       and x.name == 'tr' 
-                                      and len(x.contents) == 11, 
+                                      and len(x.contents) == 11
+                                      and traverse_html_tree(x, [('td', 1)]).text.strip() != 'Withdrawn', 
                           table_of_results.contents))))
   return len(questions_passed)
