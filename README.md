@@ -1,7 +1,7 @@
 # austin2aspen
 Goal: Scrape assessment results from UTexas and record grades in Aspen.
 
-Version 1: scrape results from UTexas and output to csv.
+Version 1: scrape results from UTexas and output to tsv.
 
 ## Flow
 1. Log in to UTexas.
@@ -9,7 +9,7 @@ Version 1: scrape results from UTexas and output to csv.
 3. Download course pages and extract assignment ID.
 4. Download the assignment results page and extract link for each student.
 5. Download student results page and extract total number of correct problems.
-6. Print to csv.
+6. Print to tsv.
 
 ## Function defs
 ```python
@@ -30,9 +30,6 @@ def extract_student_links(html):
 
 def compute_student_score(html):
     """Given student restuls page, return the total number of assignment problems that have a nonzero score."""
-
-def get_student_scores(student_name2link):
-    """Returns dict of {student_name: score}."""
 ```
 
 ## Links
